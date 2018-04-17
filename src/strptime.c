@@ -1,5 +1,6 @@
 #include <Python.h>
 #include <python2.7/datetime.h>
+#include <python2.7/pyerrors.h>
 #include <time.h>
 
 static PyObject *
@@ -13,9 +14,13 @@ my_strptime(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "ss", &datetime, &formatstr))
         return NULL;
-    
+
     extraneous_chars = strptime(datetime, formatstr, &tm);
 
+    if (extraneous_chars == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Date/time format did not match format string");
+        return (PyObject *) NULL;
+    }
     tm.tm_year += 1900;
     tm.tm_mon += 1;
 
