@@ -1,6 +1,6 @@
 # pystrptime
 
-A really, really dumb strptime implementation for Python.
+A really, really dumb `strptime` "implementation" for Python.
 
 ### What doesn't it do?
 
@@ -26,4 +26,4 @@ For a list of 256,806 matching strings:
        ...:
     10 loops, best of 3: 95.8 ms per loop
 
-This is a 47x improvement over the Python module itself.
+This is a 47x improvement over the `datetime` module itself.
