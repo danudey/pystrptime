@@ -22,7 +22,6 @@ jobs:
       - name: Update comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          comment-id: 557858210
           body: |
             **Edit:** Some additional info
           reactions: eyes
