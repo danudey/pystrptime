@@ -22,6 +22,7 @@ jobs:
       - name: Update comment
         uses: peter-evans/create-or-update-comment@v3
         with:
+          issue-number: 1
           body: |
             **Edit:** Some additional info
           reactions: eyes
