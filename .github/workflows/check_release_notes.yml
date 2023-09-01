@@ -19,14 +19,10 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Create comment
+      - name: Update comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          issue-number: 1
+          comment-id: 557858210
           body: |
-            This is a multi-line test comment
-            - With GitHub **Markdown** :sparkles:
-            - Created by [create-or-update-comment][1]
-
-            [1]: https://github.com/peter-evans/create-or-update-comment
-          reactions: '+1'
+            **Edit:** Some additional info
+          reactions: eyes
