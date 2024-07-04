@@ -19,16 +19,10 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Get PR labels
-        id: pr-labels
-        uses: joerick/pr-labels-action@v1.0.8
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Check where we are
-        id: im-lost
-        run: pwd && ls -l
-      - name: Get PR number
-        id: pr-info
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .
+      - name: Check Release Notes
+        id: release-notes
         run: ./check_release_notes.py
