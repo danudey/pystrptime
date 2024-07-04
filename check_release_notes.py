@@ -7,13 +7,18 @@ import json
 
 import github
 
-GITHUB_EVENT_PATH = os.getenv("GITHUB_EVENT_PATH")
+def get_env(env_name):
+    value = os.getenv(env_name):
+    print(f"ENV {env_name} = {value}", file=sys.stdout)
+    return value
+
+GITHUB_EVENT_PATH = get_env("GITHUB_EVENT_PATH")
 
 github_data = json.load(open(GITHUB_EVENT_PATH))
 
 gh = github.Github()
 
-repo_name = os.getenv("GH_REPO")
+repo_name = get_env("GH_REPO")
 pr_number = github_data['number']
 
 repo = gh.get_repo(repo_name)
