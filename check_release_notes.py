@@ -18,7 +18,7 @@ github_data = json.load(open(GITHUB_EVENT_PATH))
 
 gh = github.Github()
 
-repo_name = get_env("GH_REPO")
+repo_name = get_env("GITHUB_REPOSITORY")
 pr_number = github_data['number']
 
 repo = gh.get_repo(repo_name)
