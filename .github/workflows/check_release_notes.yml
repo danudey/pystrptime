@@ -28,4 +28,4 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
       - name: Get PR number
         id: pr-info
-        run: python3 check_release_notes.py ${{ github.repository }} ${{ github.event.number }}
+        run: python3 check_release_notes.py
