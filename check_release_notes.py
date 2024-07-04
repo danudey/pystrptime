@@ -8,7 +8,7 @@ import json
 import github
 
 def get_env(env_name):
-    value = os.getenv(env_name):
+    value = os.getenv(env_name)
     print(f"ENV {env_name} = {value}", file=sys.stdout)
     return value
 
