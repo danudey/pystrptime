@@ -20,19 +20,19 @@ jobs:
 
     steps:
       - name: Test New Action
-        uses: danudey/check-release-notes@v0.1
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: .
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip' # caching pip dependencies
-      - name: Install GitHub Python module
-        id: gh-py-mod
-        run: python3 -m pip install -U -r requirements.txt
-      - name: Check Release Notes
-        id: release-notes
-        run: ./check_release_notes.py
+        uses: danudey/check-release-notes@v0.2
+      # - name: Checkout
+      #   uses: actions/checkout@v4
+      #   with:
+      #     sparse-checkout: .
+      # - name: Setup Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.12'
+      #     cache: 'pip' # caching pip dependencies
+      # - name: Install GitHub Python module
+      #   id: gh-py-mod
+      #   run: python3 -m pip install -U -r requirements.txt
+      # - name: Check Release Notes
+      #   id: release-notes
+      #   run: ./check_release_notes.py
