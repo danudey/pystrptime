@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Test New Action
-        uses: danudey/check-release-notes@v0.2
+        uses: danudey/check-release-notes
       # - name: Checkout
       #   uses: actions/checkout@v4
       #   with:
