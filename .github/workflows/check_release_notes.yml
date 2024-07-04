@@ -30,7 +30,7 @@ jobs:
           cache: 'pip' # caching pip dependencies
       - name: Install GitHub Python module
         id: gh-py-mod
-        run: python3 -m pip install -U PyGithub
+        run: python3 -m pip install -U -r requirements.txt
       - name: Check Release Notes
         id: release-notes
         run: ./check_release_notes.py
