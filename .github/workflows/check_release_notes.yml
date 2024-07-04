@@ -26,6 +26,6 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: echo "$GITHUB_CONTEXT"
-      - name: Get env
+      - name: Get PR number
         id: pr-info
-        run: env
+        run: echo ${{ github.event.number }}
