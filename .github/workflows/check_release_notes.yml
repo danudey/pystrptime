@@ -25,7 +25,7 @@ jobs:
           sparse-checkout: .
       - name: Install GitHub Python module
         id: gh-py-mod
-        run: python3 -m pip install -U github
+        run: python3 -m pip install -U PyGithub
       - name: Check Release Notes
         id: release-notes
         run: ./check_release_notes.py
