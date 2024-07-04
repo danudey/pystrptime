@@ -19,6 +19,8 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Test New Action
+        uses: danudey/check-release-notes@v0.1
       - name: Checkout
         uses: actions/checkout@v4
         with:
