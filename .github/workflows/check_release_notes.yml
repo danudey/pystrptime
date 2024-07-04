@@ -8,7 +8,7 @@
 name: Labeler
 on:
   pull_request:
-    types: [labeled, unlabeled, edited]
+    types: [labeled, unlabeled, edited, synchronize]
 
 jobs:
   label:
@@ -26,6 +26,9 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: echo "$GITHUB_CONTEXT"
+      - name: Check where we are
+        id: im-lost
+        run: pwd && ls -l
       - name: Get PR number
         id: pr-info
-        run: python3 check_release_notes.py
+        run: ./check_release_notes.py
