@@ -23,12 +23,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: .
-      - name: Get env
-        id: env
-        run: env | sort
-      - name: Get stuff
-        id: stuff
-        run: jq < $GITHUB_EVENT_PATH
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip' # caching pip dependencies
       - name: Install GitHub Python module
         id: gh-py-mod
         run: python3 -m pip install -U PyGithub
