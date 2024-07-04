@@ -9,19 +9,19 @@ import github
 
 def get_env(env_name):
     value = os.getenv(env_name)
-    print(f"ENV {env_name} = {value}", file=sys.stdout)
+    # print(f"ENV {env_name} = {value}", file=sys.stdout)
     return value
 
 def fail(message):
     with open(GITHUB_RESULT_PATH, "a+") as output_file:
         output_file.write(message + "\n")
-    print(f'FAIL: {message}', file=sys.stderr)
+    # print(f'FAIL: {message}', file=sys.stderr)
     print(f'::error::{message}')
 
 def info(message):
     with open(GITHUB_RESULT_PATH, "a+") as output_file:
         output_file.write(message + "\n")
-    print(f'INFO: {message}', file=sys.stderr)
+    # print(f'INFO: {message}', file=sys.stderr)
     print(f'::notice::{message}')
 
 
@@ -53,6 +53,6 @@ if release_note_label in pr.labels:
         fail('No release notes found in PR body')
         sys.exit(-1)
 else:
-    info('no release note required')
+    info('No release note required')
 
 sys.exit(0)
