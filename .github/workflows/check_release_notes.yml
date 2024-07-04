@@ -19,10 +19,10 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Update comment
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          issue-number: 1
-          body: |
-            **Edit:** Some additional info
-          reactions: eyes
+      - name: Get PR labels
+        id: pr-labels
+        uses: joerick/pr-labels-action@v1.0.8
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
