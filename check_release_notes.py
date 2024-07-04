@@ -12,7 +12,21 @@ def get_env(env_name):
     print(f"ENV {env_name} = {value}", file=sys.stdout)
     return value
 
+def fail(message):
+    with open(GITHUB_RESULT_PATH, "a+") as output_file:
+        output_file.write(message + "\n")
+    print(f'FAIL: {message}', file=sys.stderr)
+    print(f'::error::{message}')
+
+def info(message):
+    with open(GITHUB_RESULT_PATH, "a+") as output_file:
+        output_file.write(message + "\n")
+    print(f'INFO: {message}', file=sys.stderr)
+    print(f'::notice::{message}')
+
+
 GITHUB_EVENT_PATH = get_env("GITHUB_EVENT_PATH")
+GITHUB_RESULT_PATH = get_env("GITHUB_STEP_SUMMARY")
 
 github_data = json.load(open(GITHUB_EVENT_PATH))
 
@@ -30,15 +44,15 @@ if release_note_label in pr.labels:
     if result := re.search("(?<=```release-note\n).*?(?=\n```)", pr.body, re.DOTALL):
         release_note = result.group().strip()
         if not release_note:
-            print('FAIL: Release note is empty', file=sys.stderr)
+            fail('Release note is empty')
             sys.exit(-1)
         if release_note.lower() == "tbd":
-            print('FAIL: Release note contains "TBD"', file=sys.stderr)
+            fail('Release note contains "TBD"')
             sys.exit(-1)
     else:
-        print('FAIL: No release notes found in PR body', file=sys.stderr)
+        fail('No release notes found in PR body')
         sys.exit(-1)
 else:
-    print('INFO: no release note required', file=sys.stderr)
+    info('no release note required')
 
 sys.exit(0)
