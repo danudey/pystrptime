@@ -4,7 +4,7 @@ on:
     types: [labeled, unlabeled, edited, synchronize]
 
 jobs:
-  label:
+  statusit:
     runs-on: ubuntu-latest
     permissions:
       contents: read
