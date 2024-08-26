@@ -1,6 +1,7 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <python2.7/datetime.h>
-#include <python2.7/pyerrors.h>
+#include <datetime.h>
+#include <pyerrors.h>
 #include <time.h>
 
 static PyObject *
@@ -8,7 +9,7 @@ my_strptime(PyObject *self, PyObject *args)
 {
     const char *datetime;
     const char *formatstr;
-    struct tm tm;
+    struct tm tm = {0};
     const char *extraneous_chars;
     PyObject *py_datetime = NULL;
 
@@ -21,17 +22,19 @@ my_strptime(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Date/time format did not match format string");
         return (PyObject *) NULL;
     }
-    tm.tm_year += 1900;
-    tm.tm_mon += 1;
 
     py_datetime = PyDateTime_FromDateAndTime(
-            tm.tm_year,
-            tm.tm_mon,
+            tm.tm_year + 1900,
+            tm.tm_mon + 1,
             tm.tm_mday,
             tm.tm_hour,
             tm.tm_min,
             tm.tm_sec,
             0);
+
+    if (py_datetime == NULL) {
+        return NULL;
+    }
 
     return py_datetime;
 }
@@ -42,10 +45,18 @@ static PyMethodDef StrpMethods[] = {
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
+static struct PyModuleDef strptimemodule = {
+    PyModuleDef_HEAD_INIT,
+    "strptime",
+    "A module for parsing date/time values much faster.",
+    -1,
+    StrpMethods
+};
+
 PyMODINIT_FUNC
-initstrptime(void)
+PyInit_strptime(void)
 {
-    (void) Py_InitModule("strptime", StrpMethods);
     PyDateTime_IMPORT;
+    return PyModule_Create(&strptimemodule);
 }
 
