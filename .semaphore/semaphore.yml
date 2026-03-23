@@ -61,7 +61,7 @@ blocks:
             - mkdir -p .pip_cache
             - cache restore
             - uv build
-            - artifact push workflow dist/* --force
+            - artifact push workflow dist --force
 
   # - name: "🧪 Unit Tests"
   #   dependencies:
