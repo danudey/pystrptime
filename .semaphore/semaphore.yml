@@ -1,0 +1,138 @@
+version: v1.0  # Pipeline schema: https://docs.semaphoreci.com/reference/pipeline-yaml/
+name: "🐍 Python CI/CD Pipeline"
+
+agent:  # Placeholders; choose real values in UI → https://docs.semaphoreci.com/reference/machine-types/
+  machine:
+    type: f1-standard-2
+    os_image: ubuntu2404
+
+auto_cancel:  # Skip queued runs on new commit → https://docs.semaphoreci.com/reference/pipeline-yaml/#auto-cancel
+  queued:
+    when: 'true'
+
+fail_fast:  # Abort jobs fast on non‑main branches → https://docs.semaphoreci.com/reference/pipeline-yaml/#fail-fast
+  cancel:
+    when: branch != 'main'
+
+global_job_config:
+  prologue:  # Commands executed at every job start
+    commands:
+      - checkout  # Fetch repo at current commit
+
+blocks:
+  - name: "📦 Setup Dependencies"
+    dependencies: []
+    task:
+      jobs:
+        - name: "📦 Install dependencies"
+          commands:
+            - echo "Setting up Python environment and caching dependencies…"
+            - 'export PATH="$HOME/.local/bin:$PATH"'
+            - mkdir -p .pip_cache
+            - cache restore  # Restore pip cache → https://docs.semaphoreci.com/essentials/caching-dependencies/
+            - |
+              if [ -f requirements.txt ]; then
+                pip install --user --cache-dir .pip_cache -r requirements.txt
+              else
+                echo "No requirements.txt found, skipping installation."
+              fi
+            - cache store  # Store updated cache
+
+  - name: "🔍 Lint"
+    dependencies:
+      - "📦 Setup Dependencies"
+    task:
+      jobs:
+        - name: "🔍 flake8 lint"
+          commands:
+            - echo "Running flake8 lint…"
+            - 'export PATH="$HOME/.local/bin:$PATH"'
+            - mkdir -p .pip_cache
+            - cache restore
+            - 'pip install --user flake8'
+            - flake8 .
+
+  - name: "🧪 Unit Tests"
+    dependencies:
+      - "🛡️Security Checks"  # Tests run only if security passes
+    task:
+      jobs:
+        - name: "🧪 pytest unit"
+          commands:
+            - echo "Running unit tests with pytest…"
+            - sem-version python $PYTHON_VERSION  # Interpreter selector → https://docs.semaphoreci.com/essentials/available-languages-tools/#python
+            - 'export PATH="$HOME/.local/bin:$PATH"'
+            - mkdir -p .pip_cache
+            - cache restore
+            - 'pytest --maxfail=1 --disable-warnings -q --junitxml=junit_unit.xml tests'
+          matrix:  # Matrix build across Python versions → https://docs.semaphoreci.com/reference/pipeline-yaml/#matrix
+            - env_var: PYTHON_VERSION
+              values:
+                - '3.10'
+                - '3.11'
+                - '3.12'
+      epilogue:
+        always:
+          commands:
+            - test-results publish junit_unit.xml  # Publish reports → https://docs.semaphoreci.com/essentials/test-reports/
+
+  - name: "🔗 Integration Tests"
+    dependencies:
+      - "🛡️Security Checks"
+    task:
+      jobs:
+        - name: "🔗 pytest integration"
+          commands:
+            - echo "Running integration tests with pytest…"
+            - sem-version python $PYTHON_VERSION
+            - 'export PATH="$HOME/.local/bin:$PATH"'
+            - mkdir -p .pip_cache
+            - cache restore
+            - 'pytest --maxfail=1 --disable-warnings -q --junitxml=junit_integration.xml tests/integration'
+          matrix:
+            - env_var: PYTHON_VERSION
+              values:
+                - '3.10'
+                - '3.11'
+                - '3.12'
+      epilogue:
+        always:
+          commands:
+            - test-results publish junit_integration.xml
+
+  - name: "🐳 Docker Build"
+    dependencies:
+      - "🔗 Integration Tests"
+      - "🧪 Unit Tests"
+    task:
+      jobs:
+        - name: "🐳 Build image"
+          commands:
+            - echo "Building Docker image…"
+            - |
+              if [ -f Dockerfile ]; then
+                docker build -t my-python-app:${SEMAPHORE_GIT_BRANCH:-latest} .
+              else
+                echo "No Dockerfile found, skipping Docker build."
+              fi
+
+  - name: "🛡️Security Checks"
+    dependencies:
+      - "📦 Setup Dependencies"
+    task:
+      jobs:
+        - name: "🛡️ Bandit scan"
+          commands:
+            - echo "Running Bandit security scan…"
+            - 'export PATH="$HOME/.local/bin:$PATH"'
+            - mkdir -p .pip_cache
+            - cache restore
+            - 'pip install --user bandit'
+            - bandit -r . -ll
+
+after_pipeline:
+  task:
+    jobs:
+      - name: "📊 Merge reports"
+        commands:
+          - test-results gen-pipeline-report  # Consolidate all JUnit XMLs
