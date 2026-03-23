@@ -1,3 +1,5 @@
 .*.swp
 build/
 .vscode/
+src/strptime.egg-info/
+src/strptime.*.so

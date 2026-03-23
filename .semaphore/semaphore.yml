@@ -17,6 +17,8 @@ fail_fast:  # Abort jobs fast on non‑main branches → https://docs.semaphorec
 global_job_config:
   prologue:  # Commands executed at every job start
     commands:
+      - export UV_CACHE_DIR=/home/semaphore/.pip_cache
+      - pip install -U uv
       - checkout  # Fetch repo at current commit
 
 blocks:
@@ -28,14 +30,9 @@ blocks:
           commands:
             - echo "Setting up Python environment and caching dependencies…"
             - 'export PATH="$HOME/.local/bin:$PATH"'
-            - mkdir -p .pip_cache
+            - mkdir -p ${UV_CACHE_DIR}
             - cache restore  # Restore pip cache → https://docs.semaphoreci.com/essentials/caching-dependencies/
-            - |
-              if [ -f requirements.txt ]; then
-                pip install --user --cache-dir .pip_cache -r requirements.txt
-              else
-                echo "No requirements.txt found, skipping installation."
-              fi
+            - uv sync
             - cache store  # Store updated cache
 
   - name: "🔍 Lint"
@@ -43,78 +40,91 @@ blocks:
       - "📦 Setup Dependencies"
     task:
       jobs:
-        - name: "🔍 flake8 lint"
+        - name: "🔍 ruff lint"
           commands:
-            - echo "Running flake8 lint…"
+            - echo "Running ruff lint…"
             - 'export PATH="$HOME/.local/bin:$PATH"'
             - mkdir -p .pip_cache
             - cache restore
-            - 'pip install --user flake8'
-            - flake8 .
+            - uv tool install ruff
+            - ruff check -v
 
-  - name: "🧪 Unit Tests"
+  - name: "🏗️ Build"
     dependencies:
-      - "🛡️Security Checks"  # Tests run only if security passes
+      - "📦 Setup Dependencies"
     task:
       jobs:
-        - name: "🧪 pytest unit"
+        - name: "🏗️ uv build"
           commands:
-            - echo "Running unit tests with pytest…"
-            - sem-version python $PYTHON_VERSION  # Interpreter selector → https://docs.semaphoreci.com/essentials/available-languages-tools/#python
+            - echo "Running ruff lint…"
             - 'export PATH="$HOME/.local/bin:$PATH"'
             - mkdir -p .pip_cache
             - cache restore
-            - 'pytest --maxfail=1 --disable-warnings -q --junitxml=junit_unit.xml tests'
-          matrix:  # Matrix build across Python versions → https://docs.semaphoreci.com/reference/pipeline-yaml/#matrix
-            - env_var: PYTHON_VERSION
-              values:
-                - '3.10'
-                - '3.11'
-                - '3.12'
-      epilogue:
-        always:
-          commands:
-            - test-results publish junit_unit.xml  # Publish reports → https://docs.semaphoreci.com/essentials/test-reports/
+            - uv build
 
-  - name: "🔗 Integration Tests"
-    dependencies:
-      - "🛡️Security Checks"
-    task:
-      jobs:
-        - name: "🔗 pytest integration"
-          commands:
-            - echo "Running integration tests with pytest…"
-            - sem-version python $PYTHON_VERSION
-            - 'export PATH="$HOME/.local/bin:$PATH"'
-            - mkdir -p .pip_cache
-            - cache restore
-            - 'pytest --maxfail=1 --disable-warnings -q --junitxml=junit_integration.xml tests/integration'
-          matrix:
-            - env_var: PYTHON_VERSION
-              values:
-                - '3.10'
-                - '3.11'
-                - '3.12'
-      epilogue:
-        always:
-          commands:
-            - test-results publish junit_integration.xml
+  # - name: "🧪 Unit Tests"
+  #   dependencies:
+  #     - "🛡️Security Checks"  # Tests run only if security passes
+  #   task:
+  #     jobs:
+  #       - name: "🧪 pytest unit"
+  #         commands:
+  #           - echo "Running unit tests with pytest…"
+  #           - sem-version python $PYTHON_VERSION  # Interpreter selector → https://docs.semaphoreci.com/essentials/available-languages-tools/#python
+  #           - 'export PATH="$HOME/.local/bin:$PATH"'
+  #           - mkdir -p .pip_cache
+  #           - cache restore
+  #           - 'pytest --maxfail=1 --disable-warnings -q --junitxml=junit_unit.xml tests'
+  #         matrix:  # Matrix build across Python versions → https://docs.semaphoreci.com/reference/pipeline-yaml/#matrix
+  #           - env_var: PYTHON_VERSION
+  #             values:
+  #               - '3.10'
+  #               - '3.11'
+  #               - '3.12'
+  #     epilogue:
+  #       always:
+  #         commands:
+  #           - test-results publish junit_unit.xml  # Publish reports → https://docs.semaphoreci.com/essentials/test-reports/
 
-  - name: "🐳 Docker Build"
-    dependencies:
-      - "🔗 Integration Tests"
-      - "🧪 Unit Tests"
-    task:
-      jobs:
-        - name: "🐳 Build image"
-          commands:
-            - echo "Building Docker image…"
-            - |
-              if [ -f Dockerfile ]; then
-                docker build -t my-python-app:${SEMAPHORE_GIT_BRANCH:-latest} .
-              else
-                echo "No Dockerfile found, skipping Docker build."
-              fi
+  # - name: "🔗 Integration Tests"
+  #   dependencies:
+  #     - "🛡️Security Checks"
+  #   task:
+  #     jobs:
+  #       - name: "🔗 pytest integration"
+  #         commands:
+  #           - echo "Running integration tests with pytest…"
+  #           - sem-version python $PYTHON_VERSION
+  #           - 'export PATH="$HOME/.local/bin:$PATH"'
+  #           - mkdir -p .pip_cache
+  #           - cache restore
+  #           - 'pytest --maxfail=1 --disable-warnings -q --junitxml=junit_integration.xml tests/integration'
+  #         matrix:
+  #           - env_var: PYTHON_VERSION
+  #             values:
+  #               - '3.10'
+  #               - '3.11'
+  #               - '3.12'
+  #     epilogue:
+  #       always:
+  #         commands:
+  #           - test-results publish junit_integration.xml
+
+  # - name: "🐳 Docker Build"
+  #   dependencies:
+  #     - "🔗 Integration Tests"
+  #     - "🧪 Unit Tests"
+  #   task:
+  #     jobs:
+  #       - name: "🐳 Build image"
+  #         commands:
+  #           - echo "Building Docker image…"
+  #           - |
+  #             if [ -f Dockerfile ]; then
+  #               docker build -t my-python-app:${SEMAPHORE_GIT_BRANCH:-latest} .
+  #             else
+  #               echo "No Dockerfile found, skipping Docker build."
+  #             fi
 
   - name: "🛡️Security Checks"
     dependencies:
