@@ -1,0 +1,17 @@
+name: Check Milestones
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  check-milestones:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: tigera/gh-actions-tigera/check-milestones@main
+        with:
+          branch-pattern: 'release-v*'
+          tag-pattern: 'v*'
+          milestone-prefix: 'v'
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_DE_BOTS }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
