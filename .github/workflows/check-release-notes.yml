@@ -22,14 +22,14 @@
 # ANOTHER WORKFLOW! DO NOT EDIT THIS ONE EVER EVER.
 #
 
-name: Validate Release notes
+name: PR Lint
 
 on:
   pull_request_target:
     types: [opened, reopened, edited, synchronize, labeled, unlabeled, ready_for_review]
 
 permissions:
-  checks: write
+  statuses: write
 
 concurrency:
   group: release-notes-${{ github.event.pull_request.number }}
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate Release Notes
-        uses: tigera/check-release-notes@main
+        uses: tigera/check-release-notes@test
         with:
           label-name: release-note-required
           github-token: ${{ secrets.GITHUB_TOKEN }}
